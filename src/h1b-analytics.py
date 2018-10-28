@@ -19,7 +19,6 @@ class VisaStats:
     def parse_file(self, input_csv):
         reader = csv.DictReader(open(input_csv))
         #todo : Missing data
-
         for row in reader:
             try:
                 # Non-repetitive case numbers
@@ -43,15 +42,19 @@ class VisaStats:
             header = file.readline().split(',')
             print(header)
             for name in header:
-                if 'STATUS' in name:
-                    self.visa_status = name
-                elif 'CASE' in name and 'NUMBER' in name:
-                    self.case_number = name
-                elif 'SOC' in name and 'NAME' in name:
-                    self.soc_occupation = name
-                elif 'WORK' in name and 'STATE' in name:
-                    self.work_state = name
+                try:
+                    if 'STATUS' in name:
+                        self.visa_status = name
+                    elif 'CASE' in name and 'NUMBER' in name:
+                        self.case_number = name
+                    elif 'SOC' in name and 'NAME' in name:
+                        self.soc_occupation = name
+                    elif 'WORK' in name and 'STATE' in name:
+                        self.work_state = name
+                except:
+                    pass
         self.parse_file(self.inputfile)
+
 
     def find_occupation(self):
         sorted_d = sorted((-value, key) for (key, value) in self.occ_dict.items())[:10]
@@ -59,9 +62,13 @@ class VisaStats:
         with open(self.occ_file, 'w') as file:
             file.write('TOP_OCCUPATIONS;NUMBER_CERTIFIED_APPLICATIONS;PERCENTAGE'+'\n')
             for item in sorted_d:
-                percentage = round((abs(item[0])/self.certified_count)*100,1)
-                output = item[1] + ";" + str(abs(item[0])) + ";" + str(percentage) + "%"
-                file.write(output + '\n')
+                try:
+                    percentage = round((abs(item[0])/self.certified_count)*100,1)
+                    output = item[1] + ";" + str(abs(item[0])) + ";" + str(percentage) + "%"
+                    file.write(output + '\n')
+                except:
+                    pass
+
 
     def find_states(self):
         sorted_d = sorted((-value, key) for (key, value) in self.state_dict.items())[:10]
@@ -70,9 +77,12 @@ class VisaStats:
         with open(self.state_file, 'w') as file:
             file.write('TOP_STATES;NUMBER_CERTIFIED_APPLICATIONS;PERCENTAGE'+'\n')
             for item in sorted_d:
-                percentage = round((abs(item[0])/self.certified_count)*100,1)
-                output = item[1] + ";" + str(abs(item[0])) + ";" + str(percentage) + "%"
-                file.write(output + '\n')
+                try:
+                    percentage = round((abs(item[0])/self.certified_count)*100,1)
+                    output = item[1] + ";" + str(abs(item[0])) + ";" + str(percentage) + "%"
+                    file.write(output + '\n')
+                except:
+                    pass
 
 
 def main(input_file,output_file1,output_file2):
@@ -80,8 +90,6 @@ def main(input_file,output_file1,output_file2):
     visa_stats.filter_columns()
     visa_stats.find_occupation()
     visa_stats.find_states()
-
-
 
 
 if __name__ == "__main__":
