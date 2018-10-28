@@ -2,12 +2,13 @@ import sys
 import csv
 
 class VisaStats:
-    def __init__(self,input_file, output_file1, output_file2):
+    def __init__(self, input_file, output_file1, output_file2):
         """
         Initializes of objects of the class
         """
         self.certified_count = 0
-        self.visa_status, self.soc_occupation,self.work_state, self.case_number = '','','',''
+        self.visa_status, self.case_number = '',''
+        self.soc_occupation, self.work_state,= '',''
         self.state_dict = {}
         self.occ_dict = {}
         self.unique_case_numbers = set()
@@ -15,10 +16,9 @@ class VisaStats:
         self.occ_file = output_file1
         self.state_file = output_file2
 
-
     def parse_file(self, input_csv):
         reader = csv.DictReader(open(input_csv))
-        #todo : Missing data
+        # todo : Missing data
         for row in reader:
             try:
                 # Non-repetitive case numbers
@@ -35,7 +35,6 @@ class VisaStats:
                         self.occ_dict[row[self.soc_occupation]] += 1
             except:
                 pass
-
 
     def filter_columns(self):
         with open(self.inputfile) as file:
@@ -55,7 +54,6 @@ class VisaStats:
                     pass
         self.parse_file(self.inputfile)
 
-
     def find_occupation(self):
         sorted_d = sorted((-value, key) for (key, value) in self.occ_dict.items())[:10]
         print(sorted_d)
@@ -68,7 +66,6 @@ class VisaStats:
                     file.write(output + '\n')
                 except:
                     pass
-
 
     def find_states(self):
         sorted_d = sorted((-value, key) for (key, value) in self.state_dict.items())[:10]
@@ -84,13 +81,11 @@ class VisaStats:
                 except:
                     pass
 
-
 def main(input_file,output_file1,output_file2):
     visa_stats = VisaStats(input_file,output_file1, output_file2)
     visa_stats.filter_columns()
     visa_stats.find_occupation()
     visa_stats.find_states()
-
 
 if __name__ == "__main__":
     # sys.argv[1] = "./input/h1b_input.csv"
