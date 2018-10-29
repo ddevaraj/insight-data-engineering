@@ -60,7 +60,9 @@ class VisaStats:
         :param input_csv: input csv file
         :return: creates occupation and state dict for book-keeping values
         """
-        reader = csv.DictReader(open(input_csv,'r', encoding="utf8"))
+        reader = csv.DictReader(open(input_csv,'r', encoding='utf-8'),
+                                delimiter=';')
+
         for row in reader:
             try:
                 # Non-repetitive case numbers
@@ -72,8 +74,9 @@ class VisaStats:
                         if row[self.work_state] not in self.state_dict:
                             self.state_dict[row[self.work_state]] = 0
                         self.state_dict[row[self.work_state]] += 1
-                    else:
-                        self.add_missing_values(row)
+                    # else:
+                    #     # if work_state value is missing, add employer_state
+                    #     self.add_missing_values(row)
                     if row[self.soc_occupation] != '':
                         if row[self.soc_occupation] not in self.occ_dict:
                             self.occ_dict[row[self.soc_occupation]] = 0
@@ -88,8 +91,11 @@ class VisaStats:
         eg: LCA_CASE_NUMBER and CASE_NUMBER
         :return: required column headers
         """
-        with open(self.inputfile, 'r', encoding="utf8") as file:
-            header = file.readline().split(',')
+        with open(self.inputfile, 'r', encoding='utf-8') as file:
+            header = next(csv.reader(file, delimiter=';'))
+            soc_occupation = []
+            work_state = []
+            employer_state = []
             print(header)
             for name in header:
                 try:
@@ -98,27 +104,41 @@ class VisaStats:
                     elif 'CASE' in name and 'NUMBER' in name:
                         self.case_number = name
                     elif 'SOC' in name and 'NAME' in name:
-                        self.soc_occupation = name
+                        soc_occupation.append(name)
                     elif 'WORK' in name and 'STATE' in name:
-                        self.work_state = name
+                        work_state.append(name)
                     elif 'EMPLOYER' in name and 'STATE' in name:
-                        self.employer_state = name
+                        employer_state.append(name)
                 except (IndexError, ValueError, TypeError):
                     pass
+        self.soc_occupation = soc_occupation[0]
+        self.work_state = work_state[0]
+        self.employer_state = employer_state[0]
+        print(self.visa_status, self.case_number, self.soc_occupation, self.work_state, self.employer_state)
         self.parse_file(self.inputfile)
 
-    def find_occupation(self):
+    def find_top_ten(self, req_dict, output_file, out_str):
         """
         Finds the top 10 occupations of H1B certified applications
-        :return: Output file with top 10 occupations, number of certified
+        :param req_dict: occupation or state dict required to parse
+        :param output_file: output file path
+        :param out_str: required out operation to be performed
+        :return: output file with top 10 occupations, number of certified
         applications and its percentage
         """
+        write_str = ''
+        # Sort dictionary based on value and key and retrieve the first 10
+        # ascending order sort of negative value to obtain top 10
         sorted_d = sorted((-value, key) for (key, value) in
-                          self.occ_dict.items())[:10]
-        print(sorted_d)
-        with open(self.occ_file, 'w') as file:
-            file.write('TOP_OCCUPATIONS;NUMBER_CERTIFIED_APPLICATIONS;'
-                       'PERCENTAGE'+'\n')
+                          req_dict.items())[:10]
+        if out_str == 'OCCUPATIONS':
+            write_str = "TOP_OCCUPATIONS;NUMBER_CERTIFIED_APPLICATIONS;" \
+                        "PERCENTAGE" + '\n'
+        elif out_str == 'STATES':
+            write_str ="TOP_STATES;NUMBER_CERTIFIED_APPLICATIONS;" \
+                       "PERCENTAGE" + '\n'
+        with open(output_file, 'w') as file:
+            file.write(write_str)
             for item in sorted_d:
                 try:
                     percentage = round((abs(item[0])/
@@ -129,28 +149,59 @@ class VisaStats:
                 except (IndexError, ValueError, TypeError):
                     pass
 
-    def find_states(self):
+    def write_output(self):
         """
-        Finds the top 10 states of H1B certified applications
-        :return: Output file with top 10 states, number of certified applications
-        and its percentage
+        Calls function find_top_ten to generate the required output files
+        :return: returns nothing
         """
-        sorted_d = sorted((-value, key) for (key, value) in
-                          self.state_dict.items())[:10]
-        print(sorted_d)
-        print(self.state_dict)
-        with open(self.state_file, 'w') as file:
-            file.write('TOP_STATES;NUMBER_CERTIFIED_APPLICATIONS;PERCENTAGE')
-            file.write('\n')
-            for item in sorted_d:
-                try:
-                    percentage = round((abs(item[0])/
-                                        self.certified_count)*100,1)
-                    output = item[1] + ";" + str(abs(item[0])) + ";" + \
-                             str(percentage) + "%"
-                    file.write(output + '\n')
-                except (IndexError, ValueError, TypeError):
-                    pass
+        self.find_top_ten(self.occ_dict, self.occ_file, "OCCUPATIONS")
+        self.find_top_ten(self.state_dict, self.state_file, "STATES")
+
+    # def find_occupation(self):
+    #     """
+    #     Finds the top 10 occupations of H1B certified applications
+    #     :return: Output file with top 10 occupations, number of certified
+    #     applications and its percentage
+    #     """
+    #     # Sort dictionary based on value and key and retrieve the first 10
+    #     # ascending order sort of negative value to obtain top 10
+    #     sorted_d = sorted((-value, key) for (key, value) in
+    #                       self.occ_dict.items())[:10]
+    #     with open(self.occ_file, 'w') as file:
+    #         file.write('TOP_OCCUPATIONS;NUMBER_CERTIFIED_APPLICATIONS;'
+    #                    'PERCENTAGE'+'\n')
+    #         for item in sorted_d:
+    #             try:
+    #                 percentage = round((abs(item[0])/
+    #                                     self.certified_count)*100,1)
+    #                 output = item[1] + ";" + str(abs(item[0])) + ";" + \
+    #                          str(percentage) + "%"
+    #                 file.write(output + '\n')
+    #             except (IndexError, ValueError, TypeError):
+    #                 pass
+    #
+    # def find_states(self):
+    #     """
+    #     Finds the top 10 states of H1B certified applications
+    #     :return: Output file with top 10 states, number of certified applications
+    #     and its percentage
+    #     """
+    #     sorted_d = sorted((-value, key) for (key, value) in
+    #                       self.state_dict.items())[:10]
+    #     print(sorted_d)
+    #     print(self.state_dict)
+    #     with open(self.state_file, 'w') as file:
+    #         file.write('TOP_STATES;NUMBER_CERTIFIED_APPLICATIONS;PERCENTAGE')
+    #         file.write('\n')
+    #         for item in sorted_d:
+    #             try:
+    #                 percentage = round((abs(item[0])/
+    #                                     self.certified_count)*100,1)
+    #                 output = item[1] + ";" + str(abs(item[0])) + ";" + \
+    #                          str(percentage) + "%"
+    #                 file.write(output + '\n')
+    #             except (IndexError, ValueError, TypeError):
+    #                 pass
 
 
 def main(input_file,output_file1,output_file2):
@@ -163,9 +214,12 @@ def main(input_file,output_file1,output_file2):
     """
     visa_stats = VisaStats(input_file,output_file1, output_file2)
     visa_stats.filter_columns()
-    visa_stats.find_occupation()
-    visa_stats.find_states()
+    visa_stats.write_output()
+    # visa_stats.find_occupation()
+    # visa_stats.find_states()
+
 
 
 if __name__ == "__main__":
+    # main("../input/H1B_FY_2014.csv", "../output/occ.txt", "../output/stat.txt")
     main(sys.argv[1], sys.argv[2], sys.argv[3])
