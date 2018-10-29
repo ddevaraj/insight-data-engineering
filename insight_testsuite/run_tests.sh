@@ -9,10 +9,12 @@ declare -r color_norm="${color_start}0m"
 GRADER_ROOT=$(dirname ${BASH_SOURCE})
 
 PROJECT_PATH=${GRADER_ROOT}/..
+# echo "Project path ${PROJECT_PATH}"
+# echo "Grader root ${GRADER_ROOT}"
 
 function print_dir_contents {
   local proj_path=$1
-  echo "Project contents:"
+  # echo "Project contents:"
   echo -e "${color_blue}$(ls ${proj_path})${color_norm}"
 }
 
@@ -43,7 +45,7 @@ function setup_testing_input_output {
   fi
 
   mkdir -p ${TEST_OUTPUT_PATH}
-
+  # echo "test ouput path ${TEST_OUTPUT_PATH}"
   cp -r ${PROJECT_PATH}/src ${TEST_OUTPUT_PATH}
   cp -r ${PROJECT_PATH}/run.sh ${TEST_OUTPUT_PATH}
   cp -r ${PROJECT_PATH}/input ${TEST_OUTPUT_PATH}
@@ -62,7 +64,7 @@ function compare_outputs {
 
   DIFF_RESULT1=$(diff -bB ${PROJECT_ANSWER_PATH1} ${TEST_ANSWER_PATH1} | wc -l)
   if [ "${DIFF_RESULT1}" -eq "0" ] && [ -f ${PROJECT_ANSWER_PATH1} ]; then
-    echo -e "[${color_green}PASS${color_norm}]: ${test_folder} ${OUTPUT_FILENAME}"
+    echo -e "[${color_green}PASS${color_norm}]: ${test_folder} ${OUTPUT_FILENAME1}"
     NUM_OUTPUT_FILES_PASSED=$(($NUM_OUTPUT_FILES_PASSED+1))
   else
     echo -e "[${color_red}FAIL${color_norm}]: ${test_folder}"
@@ -100,6 +102,7 @@ function run_all_tests {
 
     cd ${GRADER_ROOT}/temp
     bash run.sh 2>&1
+    cp -ar output/. ../tests/${test_folder}/output 
     cd ../
 
     compare_outputs
