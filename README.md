@@ -8,7 +8,7 @@ Insight Data Engineering Coding Challenge
 3. [Run Instructions](README.md#run-instructions)
 
 ### Challenge Summary
-A task to find trends in the immigration data of H1B visa application processing over the years. This task analyzes the past years data and calculates two metrics - Top 10 Occupations and Top 10S States for certfified visa applications.
+A task to find trends in the immigration data of H1B visa application processing over the years. This task analyzes the past years data and calculates two metrics - Top 10 Occupations and Top 10S States for certified visa applications.
 
 The data is downloaded from the [Office of Foreign Labor Certification Performance Data](https://www.foreignlaborcert.doleta.gov/performancedata.cfm#dis) and converted into a semicolon(;) separated CSV file. 
 
@@ -17,19 +17,16 @@ The task analyzes the data sent as h1b_input.csv and created a simple dictionary
 Language - Python3
 
 #### Data
-The semicolon separated CSV file is read by the program and only the essential column headers are identified. Since eachbyear can have different data/column headers, the column headers are initially read and generalized. The columns that are required are: 
+The semicolon separated CSV file is read by the program and only the essential column headers are identified. Since each year can have different data/column headers, the column headers are initially read and generalized. The columns headers that are required are: 
 * CASE_NUMBER - To uniquely identify the visa application
 > CSV file can have duplicates of the case_number, and this data is avoided. A set is created to store the unique case numbers that were encountered.
 * STATUS - Status of the visa application to be CERTIFIED
 * SOC_NAME - Standard Occupational Classification name that denotes the occupation of the visa applicant
 * WORKSITE_STATE - State in which the user is intended to work 
-* EMPLOYER_STATE - State in which the employer is headquarted (This is used to fill missing worksite_state values0
-
-It can be observed that WORKSITE_STATE can be missing in many rows. **Data Amputation** is done by filling these missing rows with the EMPLOYER_STATE value.
 
 #### Implementation
-The required columns are identified, the script parses through each row of the file to extract data. If the visa status is certified, a dictionary is created to store the worksite_state. The state becomes the key of the dictionary and the its occurrence is the key. If the worksite_state value is missing, the missing data is assumed to be the employer_state. The occupation dictionary is also created the same way (only for soc_name field not being empty).
-The dictionaries are sorted and the top 10 states and occupations are identified.
+The required columns are identified, the script parses through each row of the file to extract data. If the visa status is certified, a dictionary is created to store the worksite_state. The state becomes the key of the dictionary and its occurrence is the key. The occupation dictionary is also created the same way (only for soc_name field not being empty).
+The dictionaries are sorted and the top 10 occupations and states are identified.
 
 #### Directory Structure 
 The directory structure of the repo looks like:
@@ -37,7 +34,7 @@ The directory structure of the repo looks like:
       ├── README.md 
       ├── run.sh
       ├── src
-      │   └──h1b-analytics.py
+      │   └──h1b_analytics.py
       ├── input
       │   └──h1b_input.csv
       ├── output
@@ -89,7 +86,7 @@ WA;1;10.0%
 ``` 
 ### Run Instructions
 To run the h1b-analytics.py, the run.sh file is invoked. 
-> run.sh contains command to run the python script with the input and output file paths
+> run.sh contains command to run the python script with the input and output file paths as arguments
 
 ```
 python3 ./src/h1b-analytics.py ./input/h1b_input.csv ./output/top_10_occupations.txt ./output/top_10_states.txt
