@@ -86,7 +86,7 @@ TX;1;10.0%
 WA;1;10.0%
 ``` 
 ### Run Instructions
-To run the h1b-analytics.py, the run.sh file is invoked. 
+To run h1b_analytics.py, the run.sh file is invoked. The h1b_input.csv is placed inside the input folder (as shown in the directory structure).
 > run.sh contains the command to run the python script with the input and output file paths as arguments
 
 ```
